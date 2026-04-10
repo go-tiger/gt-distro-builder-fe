@@ -1,5 +1,5 @@
 {
-  "name": "distro-builder",
+  "name": "gt-distro-builder-fe",
   "version": "0.1.0",
   "private": true,
   "scripts": {

@@ -73,7 +73,7 @@ export default function Home() {
                   시작하기 — coming soon
                 </button>
                 <a
-                  href='https://github.com/go-tiger/distro-builder'
+                  href='https://github.com/go-tiger/gt-distro-builder-fe'
                   target='_blank'
                   rel='noopener noreferrer'
                   className='btn-scan font-mono text-sm font-medium border border-[#1e2d45] text-[#94a3b8] hover:text-[#e2e8f0] hover:border-[#2d4a6b] px-6 py-2.5 rounded-lg transition-colors'
@@ -198,7 +198,7 @@ export default function Home() {
         <div className='max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4'>
           <span className='font-mono text-xs text-[#475569]'>© 2026 go-tiger. All rights reserved.</span>
           <a
-            href='https://github.com/go-tiger/distro-builder'
+            href='https://github.com/go-tiger/gt-distro-builder-fe'
             target='_blank'
             rel='noopener noreferrer'
             className='font-mono text-xs text-[#475569] hover:text-[#00d4aa] transition-colors'
