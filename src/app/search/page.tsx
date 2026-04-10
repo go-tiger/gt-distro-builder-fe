@@ -4,6 +4,7 @@ import { useState } from 'react';
 import StepMcVersion from '@/components/wizard/StepMcVersion';
 import StepLoader from '@/components/wizard/StepLoader';
 import StepLoaderVersion from '@/components/wizard/StepLoaderVersion';
+import StepModSearch from '@/components/wizard/StepModSearch';
 
 export type WizardState = {
   mcVersion: string | null;
@@ -11,7 +12,7 @@ export type WizardState = {
   loaderVersion: string | null;
 };
 
-const STEPS = ['MC 버전', '로더', '로더 버전'];
+const STEPS = ['MC 버전', '로더', '로더 버전', '모드 검색'];
 
 export default function SearchPage() {
   const [step, setStep] = useState(0);
@@ -93,6 +94,13 @@ export default function SearchPage() {
             onSelect={v => setState(s => ({ ...s, loaderVersion: v }))}
             onNext={next}
             onBack={() => setStep(1)}
+          />
+        )}
+        {step === 3 && (
+          <StepModSearch
+            mcVersion={state.mcVersion!}
+            loader={state.loader!}
+            onBack={() => setStep(2)}
           />
         )}
       </main>
