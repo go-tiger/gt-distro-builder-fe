@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import type { SelectedMod } from '@/types/wizard';
 
 interface ModResult {
   project_id: string;
@@ -20,19 +21,11 @@ interface ModVersion {
   featured: boolean;
 }
 
-interface SelectedMod {
-  project_id: string;
-  title: string;
-  author: string;
-  icon_url: string | null;
-  version_id: string;
-  version_number: string;
-}
-
 interface Props {
   mcVersion: string;
   loader: string;
   onBack: () => void;
+  onNext: (mods: SelectedMod[]) => void;
 }
 
 const LIMIT = 20;
@@ -43,7 +36,7 @@ function formatNumber(n: number): string {
   return String(n);
 }
 
-export default function StepModSearch({ mcVersion, loader, onBack }: Props) {
+export default function StepModSearch({ mcVersion, loader, onBack, onNext }: Props) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<ModResult[]>([]);
   const [total, setTotal] = useState(0);
@@ -159,6 +152,7 @@ export default function StepModSearch({ mcVersion, loader, onBack }: Props) {
         icon_url: mod.icon_url,
         version_id: version.id,
         version_number: version.version_number,
+        option: 'required' as const,
       }];
     });
     setExpandedMod(null);
@@ -346,9 +340,10 @@ export default function StepModSearch({ mcVersion, loader, onBack }: Props) {
         </button>
         <button
           disabled={selectedMods.length === 0}
+          onClick={() => onNext(selectedMods)}
           className="font-mono text-sm font-semibold bg-[#00d4aa]/10 border border-[#00d4aa]/40 text-[#00d4aa] px-6 py-2.5 rounded-lg hover:bg-[#00d4aa]/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
-          완료 ({selectedMods.length})
+          다음 → ({selectedMods.length})
         </button>
       </div>
     </div>
