@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import StepMcVersion from '@/components/wizard/StepMcVersion';
 import StepLoader from '@/components/wizard/StepLoader';
+import StepLoaderVersion from '@/components/wizard/StepLoaderVersion';
 
 export type WizardState = {
   mcVersion: string | null;
@@ -10,7 +11,7 @@ export type WizardState = {
   loaderVersion: string | null;
 };
 
-const STEPS = ['MC 버전', '로더'];
+const STEPS = ['MC 버전', '로더', '로더 버전'];
 
 export default function SearchPage() {
   const [step, setStep] = useState(0);
@@ -82,6 +83,16 @@ export default function SearchPage() {
             onSelect={v => setState(s => ({ ...s, loader: v }))}
             onNext={next}
             onBack={() => setStep(0)}
+          />
+        )}
+        {step === 2 && (
+          <StepLoaderVersion
+            loader={state.loader!}
+            mcVersion={state.mcVersion!}
+            selected={state.loaderVersion}
+            onSelect={v => setState(s => ({ ...s, loaderVersion: v }))}
+            onNext={next}
+            onBack={() => setStep(1)}
           />
         )}
       </main>
