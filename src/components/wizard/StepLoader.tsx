@@ -9,8 +9,15 @@ interface Props {
 }
 
 function isNeoForgeSupported(mcVersion: string): boolean {
-  const [, minor, patch = 0] = mcVersion.split('.').map(Number);
-  return minor > 20 || (minor === 20 && patch >= 2);
+  const parts = mcVersion.split('.').map(Number);
+  const major = parts[0];
+  const minor = parts[1];
+  const patch = parts[2] ?? 0;
+  // 26.x 이상 새 넘버링은 지원
+  if (major >= 26) return true;
+  // 1.x 넘버링: 1.20.2 이상 지원
+  if (major === 1) return minor > 20 || (minor === 20 && patch >= 2);
+  return false;
 }
 
 const LOADERS = [

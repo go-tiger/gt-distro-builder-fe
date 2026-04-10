@@ -37,9 +37,12 @@ async function fetchNeoForgeVersions(mcVersion: string): Promise<string[]> {
   const versions = matches.map(m => m.replace(/<\/?version>/g, '')).filter(v => !v.includes('beta'));
 
   // MC 버전 → NeoForge 접두어 매핑
-  // 1.20.2 → "20.2.", 1.21.1 → "21.1.", 1.21.10 → "21.10."
+  // 1.20.2 → "20.2.", 1.21.1 → "21.1."
+  // 26.1 (새 넘버링) → "26.1."
   const parts = mcVersion.split('.');
-  const prefix = parts.slice(1).join('.') + '.';
+  const prefix = parts[0] === '1'
+    ? parts.slice(1).join('.') + '.'  // 1.x 넘버링
+    : parts.slice(0, 2).join('.') + '.'; // 26.x 새 넘버링
   return versions.filter(v => v.startsWith(prefix)).reverse();
 }
 
