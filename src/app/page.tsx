@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import FeatureCard from '@/components/FeatureCard';
 import TechBadge from '@/components/TechBadge';
 
@@ -66,12 +67,12 @@ export default function Home() {
               </p>
 
               <div className='flex flex-wrap gap-3 animate-fade-up-delay-3'>
-                <button
-                  disabled
-                  className='btn-scan font-mono text-sm font-semibold bg-[#00d4aa]/10 border border-[#00d4aa]/40 text-[#00d4aa] px-6 py-2.5 rounded-lg cursor-not-allowed opacity-60'
+                <Link
+                  href='/search'
+                  className='btn-scan font-mono text-sm font-semibold bg-[#00d4aa]/10 border border-[#00d4aa]/40 text-[#00d4aa] px-6 py-2.5 rounded-lg hover:bg-[#00d4aa]/20 transition-colors'
                 >
-                  시작하기 — coming soon
-                </button>
+                  시작하기 →
+                </Link>
                 <a
                   href='https://github.com/go-tiger/gt-distro-builder-fe'
                   target='_blank'
