@@ -73,14 +73,6 @@ export default function Home() {
                 >
                   시작하기 →
                 </Link>
-                <a
-                  href='https://github.com/go-tiger/gt-distro-builder-fe'
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='btn-scan font-mono text-sm font-medium border border-[#1e2d45] text-[#94a3b8] hover:text-[#e2e8f0] hover:border-[#2d4a6b] px-6 py-2.5 rounded-lg transition-colors'
-                >
-                  view source ↗
-                </a>
               </div>
             </div>
 
