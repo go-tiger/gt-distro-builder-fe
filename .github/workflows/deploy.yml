@@ -32,6 +32,8 @@ jobs:
 
       - run: npm run build
 
+      - run: echo "distro-builder.gotiger.dev" > out/CNAME
+
       - uses: actions/configure-pages@v4
 
       - uses: actions/upload-pages-artifact@v3
