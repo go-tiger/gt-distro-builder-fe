@@ -27,6 +27,8 @@ jobs:
         run: npm run build
 
       - name: Deploy to gh-pages
-        run: npx gh-pages -d out -t true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out
+          publish_branch: gh-pages
