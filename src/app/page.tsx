@@ -135,12 +135,12 @@ export default function Home() {
       {/* ── Footer ──────────────────────────────────────────────────────── */}
       <footer className='border-t border-[#1e2d45] mt-auto'>
         <div className='max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4'>
-          <span className='font-mono text-xs text-[#475569]'>© 2026 go-tiger. All rights reserved.</span>
+          <span className='font-mono text-xs text-[#94a3b8]'>© 2026 go-tiger. All rights reserved.</span>
           <a
             href='https://github.com/go-tiger/gt-distro-builder-fe'
             target='_blank'
             rel='noopener noreferrer'
-            className='font-mono text-xs text-[#475569] hover:text-[#00d4aa] transition-colors'
+            className='font-mono text-xs text-[#94a3b8] hover:text-[#00d4aa] transition-colors'
           >
             github ↗
           </a>
