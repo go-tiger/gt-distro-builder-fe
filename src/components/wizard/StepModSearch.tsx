@@ -19,6 +19,7 @@ interface ModVersion {
   name: string;
   version_number: string;
   featured: boolean;
+  files: Array<{ url: string; size: number; primary: boolean }>;
 }
 
 interface Props {
@@ -143,6 +144,7 @@ export default function StepModSearch({ mcVersion, loader, onBack, onNext }: Pro
   }
 
   function selectVersion(mod: ModResult, version: ModVersion) {
+    const primaryFile = version.files.find(f => f.primary) ?? version.files[0];
     setSelectedMods(prev => {
       const filtered = prev.filter(m => m.project_id !== mod.project_id);
       return [...filtered, {
@@ -152,6 +154,8 @@ export default function StepModSearch({ mcVersion, loader, onBack, onNext }: Pro
         icon_url: mod.icon_url,
         version_id: version.id,
         version_number: version.version_number,
+        artifact_url: primaryFile?.url ?? '',
+        artifact_size: primaryFile?.size ?? 0,
         option: 'required' as const,
       }];
     });

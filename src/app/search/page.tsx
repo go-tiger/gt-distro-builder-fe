@@ -9,6 +9,7 @@ import StepModOptions from '@/components/wizard/StepModOptions';
 import StepResourcePackSearch from '@/components/wizard/StepResourcePackSearch';
 import StepShaderPackSearch from '@/components/wizard/StepShaderPackSearch';
 import StepExtraFiles from '@/components/wizard/StepExtraFiles';
+import StepJsonPreview from '@/components/wizard/StepJsonPreview';
 import type { SelectedMod, SelectedResourcePack, SelectedShaderPack, SelectedExtraFile } from '@/types/wizard';
 
 type WizardState = {
@@ -21,7 +22,7 @@ type WizardState = {
   extraFiles: SelectedExtraFile[];
 };
 
-const STEPS = ['MC 버전', '로더', '로더 버전', '모드 검색', '모드 옵션', '리소스팩', '쉐이더팩', '기타 파일'];
+const STEPS = ['MC 버전', '로더', '로더 버전', '모드 검색', '모드 옵션', '리소스팩', '쉐이더팩', '기타 파일', 'JSON 생성'];
 
 export default function SearchPage() {
   const [step, setStep] = useState(0);
@@ -153,6 +154,18 @@ export default function SearchPage() {
               setState(s => ({ ...s, extraFiles }));
               next();
             }}
+          />
+        )}
+        {step === 8 && (
+          <StepJsonPreview
+            mcVersion={state.mcVersion!}
+            loader={state.loader!}
+            loaderVersion={state.loaderVersion!}
+            mods={state.mods}
+            resourcePacks={state.resourcePacks}
+            shaderPacks={state.shaderPacks}
+            extraFiles={state.extraFiles}
+            onBack={() => setStep(7)}
           />
         )}
       </main>

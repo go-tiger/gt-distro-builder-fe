@@ -17,6 +17,7 @@ interface PackVersion {
   name: string;
   version_number: string;
   featured: boolean;
+  files: Array<{ url: string; size: number; primary: boolean }>;
 }
 
 interface Props {
@@ -162,6 +163,7 @@ export default function StepResourcePackSearch({ mcVersion, onBack, onNext }: Pr
   }
 
   function selectVersion(pack: PackResult, version: PackVersion) {
+    const primaryFile = version.files.find(f => f.primary) ?? version.files[0];
     setSelectedPacks(prev => {
       const filtered = prev.filter(p => p.project_id !== pack.project_id);
       return [...filtered, {
@@ -172,6 +174,8 @@ export default function StepResourcePackSearch({ mcVersion, onBack, onNext }: Pr
         icon_url: pack.icon_url,
         version_id: version.id,
         version_number: version.version_number,
+        artifact_url: primaryFile?.url ?? '',
+        artifact_size: primaryFile?.size ?? 0,
         tracked: true,
       }];
     });
