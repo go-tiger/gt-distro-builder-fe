@@ -10,6 +10,18 @@ export interface SelectedMod {
   option: ModOption;
 }
 
+export interface SelectedShaderPack {
+  type: 'modrinth' | 'manual';
+  project_id?: string;
+  title?: string;
+  author?: string;
+  icon_url?: string | null;
+  version_id?: string;
+  version_number?: string;
+  url?: string;
+  tracked: boolean;
+}
+
 export interface SelectedResourcePack {
   type: 'modrinth' | 'manual';
   // Modrinth

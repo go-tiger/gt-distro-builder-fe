@@ -7,7 +7,8 @@ import StepLoaderVersion from '@/components/wizard/StepLoaderVersion';
 import StepModSearch from '@/components/wizard/StepModSearch';
 import StepModOptions from '@/components/wizard/StepModOptions';
 import StepResourcePackSearch from '@/components/wizard/StepResourcePackSearch';
-import type { SelectedMod, SelectedResourcePack } from '@/types/wizard';
+import StepShaderPackSearch from '@/components/wizard/StepShaderPackSearch';
+import type { SelectedMod, SelectedResourcePack, SelectedShaderPack } from '@/types/wizard';
 
 type WizardState = {
   mcVersion: string | null;
@@ -15,9 +16,10 @@ type WizardState = {
   loaderVersion: string | null;
   mods: SelectedMod[];
   resourcePacks: SelectedResourcePack[];
+  shaderPacks: SelectedShaderPack[];
 };
 
-const STEPS = ['MC 버전', '로더', '로더 버전', '모드 검색', '모드 옵션', '리소스팩'];
+const STEPS = ['MC 버전', '로더', '로더 버전', '모드 검색', '모드 옵션', '리소스팩', '쉐이더팩'];
 
 export default function SearchPage() {
   const [step, setStep] = useState(0);
@@ -27,6 +29,7 @@ export default function SearchPage() {
     loaderVersion: null,
     mods: [],
     resourcePacks: [],
+    shaderPacks: [],
   });
 
   function next() {
@@ -126,6 +129,16 @@ export default function SearchPage() {
             onBack={() => setStep(4)}
             onNext={resourcePacks => {
               setState(s => ({ ...s, resourcePacks }));
+              next();
+            }}
+          />
+        )}
+        {step === 6 && (
+          <StepShaderPackSearch
+            mcVersion={state.mcVersion!}
+            onBack={() => setStep(5)}
+            onNext={shaderPacks => {
+              setState(s => ({ ...s, shaderPacks }));
               next();
             }}
           />
