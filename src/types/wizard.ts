@@ -10,6 +10,13 @@ export interface SelectedMod {
   option: ModOption;
 }
 
+export interface SelectedExtraFile {
+  // File 타입: instanceDirectory/{serverId}/{path} 에 저장
+  path: string;
+  url: string;
+  tracked: boolean;
+}
+
 export interface SelectedShaderPack {
   type: 'modrinth' | 'manual';
   project_id?: string;
