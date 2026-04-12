@@ -6,16 +6,18 @@ import StepLoader from '@/components/wizard/StepLoader';
 import StepLoaderVersion from '@/components/wizard/StepLoaderVersion';
 import StepModSearch from '@/components/wizard/StepModSearch';
 import StepModOptions from '@/components/wizard/StepModOptions';
-import type { SelectedMod } from '@/types/wizard';
+import StepResourcePackSearch from '@/components/wizard/StepResourcePackSearch';
+import type { SelectedMod, SelectedResourcePack } from '@/types/wizard';
 
 type WizardState = {
   mcVersion: string | null;
   loader: string | null;
   loaderVersion: string | null;
   mods: SelectedMod[];
+  resourcePacks: SelectedResourcePack[];
 };
 
-const STEPS = ['MC 버전', '로더', '로더 버전', '모드 검색', '모드 옵션'];
+const STEPS = ['MC 버전', '로더', '로더 버전', '모드 검색', '모드 옵션', '리소스팩'];
 
 export default function SearchPage() {
   const [step, setStep] = useState(0);
@@ -24,6 +26,7 @@ export default function SearchPage() {
     loader: null,
     loaderVersion: null,
     mods: [],
+    resourcePacks: [],
   });
 
   function next() {
@@ -115,6 +118,16 @@ export default function SearchPage() {
             onUpdate={mods => setState(s => ({ ...s, mods }))}
             onNext={next}
             onBack={() => setStep(3)}
+          />
+        )}
+        {step === 5 && (
+          <StepResourcePackSearch
+            mcVersion={state.mcVersion!}
+            onBack={() => setStep(4)}
+            onNext={resourcePacks => {
+              setState(s => ({ ...s, resourcePacks }));
+              next();
+            }}
           />
         )}
       </main>
