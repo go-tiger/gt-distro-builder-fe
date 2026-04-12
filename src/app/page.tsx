@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import FeatureCard from '@/components/FeatureCard';
-import TechBadge from '@/components/TechBadge';
 
 const features = [
   {
@@ -21,14 +20,6 @@ const features = [
   },
 ];
 
-const techStack = [
-  { name: 'Next.js', type: 'frontend' as const },
-  { name: 'React', type: 'frontend' as const },
-  { name: 'TypeScript', type: 'frontend' as const },
-  { name: 'Tailwind CSS', type: 'frontend' as const },
-  { name: 'NestJS', type: 'backend' as const },
-  { name: 'PostgreSQL', type: 'infra' as const },
-];
 
 export default function Home() {
   return (
@@ -138,52 +129,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── Divider ─────────────────────────────────────────────────── */}
-        <div className='border-t border-[#1e2d45]' />
 
-        {/* ── Tech Stack ──────────────────────────────────────────────── */}
-        <section className='py-24'>
-          <div className='flex items-baseline gap-4 mb-10'>
-            <h2 className='text-2xl font-bold text-[#e2e8f0]'>기술 스택</h2>
-            <span className='font-mono text-xs text-[#475569]'>// tech-stack</span>
-          </div>
-
-          <div className='grid sm:grid-cols-3 gap-6'>
-            {/* Frontend */}
-            <div>
-              <p className='font-mono text-xs text-[#475569] mb-3 uppercase tracking-widest'>Frontend</p>
-              <div className='flex flex-wrap gap-2'>
-                {techStack
-                  .filter(t => t.type === 'frontend')
-                  .map(t => (
-                    <TechBadge key={t.name} {...t} />
-                  ))}
-              </div>
-            </div>
-            {/* Backend */}
-            <div>
-              <p className='font-mono text-xs text-[#475569] mb-3 uppercase tracking-widest'>Backend</p>
-              <div className='flex flex-wrap gap-2'>
-                {techStack
-                  .filter(t => t.type === 'backend')
-                  .map(t => (
-                    <TechBadge key={t.name} {...t} />
-                  ))}
-              </div>
-            </div>
-            {/* Infra */}
-            <div>
-              <p className='font-mono text-xs text-[#475569] mb-3 uppercase tracking-widest'>Infra</p>
-              <div className='flex flex-wrap gap-2'>
-                {techStack
-                  .filter(t => t.type === 'infra')
-                  .map(t => (
-                    <TechBadge key={t.name} {...t} />
-                  ))}
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
 
       {/* ── Footer ──────────────────────────────────────────────────────── */}
