@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import type { SelectedMod, SelectedResourcePack, SelectedShaderPack, SelectedExtraFile } from '@/types/wizard';
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3001';
+
 interface Props {
   mcVersion: string;
   loader: string;
@@ -134,6 +136,7 @@ function buildDistributionJson(
   shaderPacks: SelectedShaderPack[],
   extraFiles: SelectedExtraFile[],
   loaderSubModules: ModuleEntry[],
+  backendModules: ModuleEntry[] | null,
 ): DistributionJson {
   const modType = getModuleType(loader);
 
@@ -148,17 +151,25 @@ function buildDistributionJson(
     ...(loaderSubModules.length > 0 ? { subModules: loaderSubModules } : {}),
   };
 
-  const modModules: ModuleEntry[] = mods.map(mod => ({
-    id: `${mod.project_id}:${mod.version_id}`,
-    name: mod.title,
-    type: modType,
-    artifact: {
-      size: mod.artifact_size,
-      MD5: null,
-      url: mod.artifact_url,
-    },
-    required: modOptionToRequired(mod.option),
-  }));
+  // 백엔드에서 MD5/size가 채워진 모듈을 받았으면 그것을 사용, 없으면 프론트에서 구성
+  const modModules: ModuleEntry[] = backendModules
+    ? backendModules.map(m => ({
+        ...m,
+        required: mods.find(mod => m.id.startsWith(mod.project_id))
+          ? modOptionToRequired(mods.find(mod => m.id.startsWith(mod.project_id))!.option)
+          : undefined,
+      }))
+    : mods.map(mod => ({
+        id: `${mod.project_id}:${mod.version_id}`,
+        name: mod.title,
+        type: modType,
+        artifact: {
+          size: mod.artifact_size,
+          MD5: null,
+          url: mod.artifact_url,
+        },
+        required: modOptionToRequired(mod.option),
+      }));
 
   const resourcePackModules: ModuleEntry[] = resourcePacks.map((pack, i) => {
     const id = pack.type === 'modrinth' && pack.project_id
@@ -228,6 +239,35 @@ function buildDistributionJson(
   };
 }
 
+async function fetchBackendModules(
+  mcVersion: string,
+  loader: string,
+  mods: SelectedMod[],
+): Promise<ModuleEntry[] | null> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/distribution/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        serverId: `${mcVersion}-${loader}`,
+        serverName: `${mcVersion} ${loader.charAt(0).toUpperCase() + loader.slice(1)}`,
+        minecraftVersion: mcVersion,
+        loader,
+        mods: mods.map(m => ({
+          slug: m.project_id,
+          version: m.version_number,
+          required: m.option === 'required',
+        })),
+      }),
+    });
+    if (!res.ok) return null;
+    const data: DistributionJson = await res.json();
+    return data.servers?.[0]?.modules ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export default function StepJsonPreview({
   mcVersion,
   loader,
@@ -241,6 +281,9 @@ export default function StepJsonPreview({
   const [copied, setCopied] = useState(false);
   const [loaderSubModules, setLoaderSubModules] = useState<ModuleEntry[]>([]);
   const [loadingSubModules, setLoadingSubModules] = useState(false);
+  const [backendModules, setBackendModules] = useState<ModuleEntry[] | null>(null);
+  const [loadingBackend, setLoadingBackend] = useState(false);
+  const [backendError, setBackendError] = useState<string | null>(null);
 
   useEffect(() => {
     if (loader !== 'fabric') return;
@@ -251,12 +294,30 @@ export default function StepJsonPreview({
       .finally(() => setLoadingSubModules(false));
   }, [loader, mcVersion, loaderVersion]);
 
+  useEffect(() => {
+    if (mods.length === 0) return;
+    setLoadingBackend(true);
+    setBackendError(null);
+    fetchBackendModules(mcVersion, loader, mods)
+      .then(modules => {
+        if (modules) {
+          setBackendModules(modules);
+        } else {
+          setBackendError('백엔드 연결 실패 — MD5 없이 생성됩니다.');
+        }
+      })
+      .finally(() => setLoadingBackend(false));
+  }, [mcVersion, loader, mods]);
+
   const json = buildDistributionJson(
     mcVersion, loader, loaderVersion,
     mods, resourcePacks, shaderPacks, extraFiles,
     loaderSubModules,
+    backendModules,
   );
   const jsonStr = JSON.stringify(json, null, 2);
+
+  const isLoading = loadingSubModules || loadingBackend;
 
   function download() {
     const blob = new Blob([jsonStr], { type: 'application/json' });
@@ -303,6 +364,26 @@ export default function StepJsonPreview({
         ))}
       </div>
 
+      {/* 백엔드 로딩 상태 */}
+      {loadingBackend && mods.length > 0 && (
+        <div className="flex items-center gap-2 text-[#475569] font-mono text-xs mb-4">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#00d4aa] animate-pulse" />
+          백엔드에서 모드 MD5 계산 중...
+        </div>
+      )}
+      {!loadingBackend && backendModules && (
+        <div className="bg-[#00d4aa]/5 border border-[#00d4aa]/20 rounded-xl px-4 py-2.5 mb-4">
+          <p className="font-mono text-xs text-[#00d4aa]">
+            백엔드에서 MD5 해시 {backendModules.length}개 적용됨
+          </p>
+        </div>
+      )}
+      {!loadingBackend && backendError && (
+        <div className="bg-[#f59e0b]/5 border border-[#f59e0b]/30 rounded-xl px-4 py-2.5 mb-4">
+          <p className="font-mono text-xs text-[#f59e0b]">{backendError}</p>
+        </div>
+      )}
+
       {/* 로더 서브모듈 로딩 상태 */}
       {loader === 'fabric' && loadingSubModules && (
         <div className="flex items-center gap-2 text-[#475569] font-mono text-xs mb-4">
@@ -322,8 +403,7 @@ export default function StepJsonPreview({
       <div className="bg-[#f59e0b]/5 border border-[#f59e0b]/30 rounded-xl p-4 mb-6">
         <p className="font-mono text-xs text-[#f59e0b] mb-1">주의사항</p>
         <ul className="font-mono text-[11px] text-[#94a3b8] space-y-1 list-disc list-inside">
-          <li>MD5 해시는 백엔드에서 채워야 합니다.</li>
-          <li>로더 모듈의 size·MD5도 실제 값으로 교체하세요.</li>
+          <li>로더 모듈의 size·MD5는 실제 값으로 교체하세요.</li>
           <li>서버 id, name, address, icon 등 메타데이터는 직접 수정하세요.</li>
           {(loader === 'forge' || loader === 'neoforge') && (
             <li>{loader === 'forge' ? 'Forge' : 'NeoForge'} 서브모듈은 자동 생성되지 않습니다. 직접 추가하세요.</li>
@@ -357,10 +437,10 @@ export default function StepJsonPreview({
         </button>
         <button
           onClick={download}
-          disabled={loader === 'fabric' && loadingSubModules}
+          disabled={isLoading}
           className="font-mono text-sm font-semibold bg-[#00d4aa]/10 border border-[#00d4aa]/40 text-[#00d4aa] px-6 py-2.5 rounded-lg hover:bg-[#00d4aa]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          다운로드 →
+          {isLoading ? '생성 중...' : '다운로드 →'}
         </button>
       </div>
     </div>
