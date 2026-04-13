@@ -255,6 +255,7 @@ async function fetchBackendModules(
         loader,
         mods: mods.map(m => ({
           slug: m.slug,
+          name: m.title,
           version: m.version_number,
           required: m.option === 'required',
         })),
