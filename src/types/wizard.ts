@@ -2,6 +2,7 @@ export type ModOption = 'required' | 'optional-on' | 'optional-off';
 
 export interface SelectedMod {
   project_id: string;
+  slug: string;
   title: string;
   author: string;
   icon_url: string | null;

@@ -149,6 +149,7 @@ export default function StepModSearch({ mcVersion, loader, onBack, onNext }: Pro
       const filtered = prev.filter(m => m.project_id !== mod.project_id);
       return [...filtered, {
         project_id: mod.project_id,
+        slug: mod.slug,
         title: mod.title,
         author: mod.author,
         icon_url: mod.icon_url,

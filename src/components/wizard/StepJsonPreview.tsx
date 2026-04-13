@@ -254,7 +254,7 @@ async function fetchBackendModules(
         minecraftVersion: mcVersion,
         loader,
         mods: mods.map(m => ({
-          slug: m.project_id,
+          slug: m.slug,
           version: m.version_number,
           required: m.option === 'required',
         })),
