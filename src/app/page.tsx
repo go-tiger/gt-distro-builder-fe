@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import FeatureCard from '@/components/FeatureCard';
 import { api } from '@/lib/api';
+import { auth } from '@/lib/auth';
 
 const features = [
   {
@@ -26,14 +28,19 @@ const features = [
 
 
 export default function Home() {
+  const router = useRouter();
   const [quota, setQuota] = useState<any>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchQuota = async () => {
       try {
-        const data = await api.get('/api/auth/me');
-        setQuota(data);
+        if (auth.isLoggedIn()) {
+          setIsLoggedIn(true);
+          const data = await api.get('/api/auth/me');
+          setQuota(data);
+        }
       } catch {
         // 오류 무시
       } finally {
@@ -44,17 +51,42 @@ export default function Home() {
     fetchQuota();
   }, []);
 
+  const handleStartClick = () => {
+    if (!auth.isLoggedIn()) {
+      router.push('/login');
+    } else {
+      router.push('/search');
+    }
+  };
+
   return (
     <div className='min-h-screen dot-grid bg-[#080c14]'>
       {/* ── Nav ─────────────────────────────────────────────────────── */}
       <nav className='border-b border-[#1e2d45] sticky top-0 z-50 backdrop-blur-md bg-[#080c14]/80'>
         <div className='max-w-6xl mx-auto px-6 h-14 flex items-center justify-between'>
           <span className='font-mono text-sm font-bold text-[#00d4aa]'>distro-builder</span>
-          {!loading && quota && (
-            <div className='text-sm text-[#94a3b8]'>
-              남은 횟수: <span className='text-[#00d4aa] font-semibold'>{quota.remainingQuota}</span>
-            </div>
-          )}
+          <div className='flex items-center gap-6'>
+            {!loading && quota && (
+              <div className='text-sm text-[#94a3b8]'>
+                남은 횟수: <span className='text-[#00d4aa] font-semibold'>{quota.remainingQuota}</span>
+              </div>
+            )}
+            {isLoggedIn ? (
+              <button
+                onClick={() => router.push('/search')}
+                className='text-sm text-[#94a3b8] hover:text-[#00d4aa] transition'
+              >
+                대시보드
+              </button>
+            ) : (
+              <Link
+                href='/login'
+                className='text-sm text-[#94a3b8] hover:text-[#00d4aa] transition'
+              >
+                로그인
+              </Link>
+            )}
+          </div>
         </div>
       </nav>
 
@@ -85,12 +117,12 @@ export default function Home() {
               </p>
 
               <div className='flex flex-wrap gap-3 animate-fade-up-delay-3'>
-                <Link
-                  href='/search'
+                <button
+                  onClick={handleStartClick}
                   className='btn-scan font-mono text-sm font-semibold bg-[#00d4aa]/10 border border-[#00d4aa]/40 text-[#00d4aa] px-6 py-2.5 rounded-lg hover:bg-[#00d4aa]/20 transition-colors'
                 >
                   시작하기 →
-                </Link>
+                </button>
               </div>
             </div>
 

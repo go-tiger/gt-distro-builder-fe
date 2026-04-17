@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { auth } from '@/lib/auth';
 
-const PUBLIC_PATHS = ['/login', '/register'];
+const PROTECTED_PATHS = ['/search'];
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -12,10 +12,10 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const isPublicPath = PUBLIC_PATHS.includes(pathname);
+    const isProtectedPath = PROTECTED_PATHS.includes(pathname);
     const isLoggedIn = auth.isLoggedIn();
 
-    if (!isLoggedIn && !isPublicPath) {
+    if (isProtectedPath && !isLoggedIn) {
       router.push('/login');
     } else {
       setIsLoading(false);
