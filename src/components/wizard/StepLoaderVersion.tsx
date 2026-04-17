@@ -20,7 +20,8 @@ async function fetchFabricVersions(mcVersion: string): Promise<string[]> {
 
 async function fetchForgeVersions(mcVersion: string): Promise<string[]> {
   // Backend proxy endpoint to avoid CORS issues
-  const res = await fetch(`/api/loaders/forge/${mcVersion}`);
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+  const res = await fetch(`${backendUrl}/api/loaders/forge/${mcVersion}`);
   const data = await res.json();
   return data;
 }
