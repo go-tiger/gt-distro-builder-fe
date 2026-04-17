@@ -59,6 +59,13 @@ export default function Home() {
     }
   };
 
+  const handleLogout = () => {
+    auth.removeToken();
+    setIsLoggedIn(false);
+    setQuota(null);
+    router.push('/');
+  };
+
   return (
     <div className='min-h-screen dot-grid bg-[#080c14]'>
       {/* ── Nav ─────────────────────────────────────────────────────── */}
@@ -72,12 +79,20 @@ export default function Home() {
               </div>
             )}
             {isLoggedIn ? (
-              <button
-                onClick={() => router.push('/search')}
-                className='text-sm text-[#94a3b8] hover:text-[#00d4aa] transition'
-              >
-                대시보드
-              </button>
+              <div className='flex items-center gap-4'>
+                <button
+                  onClick={() => router.push('/search')}
+                  className='text-sm text-[#94a3b8] hover:text-[#00d4aa] transition'
+                >
+                  대시보드
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className='text-sm text-[#94a3b8] hover:text-red-400 transition'
+                >
+                  로그아웃
+                </button>
+              </div>
             ) : (
               <Link
                 href='/login'
