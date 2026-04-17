@@ -91,19 +91,22 @@ export default function StepLoaderVersion({ loader, mcVersion, selected, onSelec
 
       {!loading && !error && versions.length > 0 && (
         <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mb-8 max-h-80 overflow-y-auto pr-1'>
-          {versions.map(v => (
-            <button
-              key={v}
-              onClick={() => onSelect(v)}
-              className={`font-mono text-sm px-3 py-2 rounded-lg border transition-colors text-left ${
-                selected === v
-                  ? 'bg-[#00d4aa]/20 border-[#00d4aa] text-[#00d4aa]'
-                  : 'bg-[#0d1424] border-[#1e2d45] text-[#94a3b8] hover:border-[#2d4a6b] hover:text-[#e2e8f0]'
-              }`}
-            >
-              {v}
-            </button>
-          ))}
+          {versions.map(v => {
+            const cleanVersion = v.replace(/ \([^)]+\)$/, '');
+            return (
+              <button
+                key={v}
+                onClick={() => onSelect(cleanVersion)}
+                className={`font-mono text-sm px-3 py-2 rounded-lg border transition-colors text-left ${
+                  selected === cleanVersion
+                    ? 'bg-[#00d4aa]/20 border-[#00d4aa] text-[#00d4aa]'
+                    : 'bg-[#0d1424] border-[#1e2d45] text-[#94a3b8] hover:border-[#2d4a6b] hover:text-[#e2e8f0]'
+                }`}
+              >
+                {v}
+              </button>
+            );
+          })}
         </div>
       )}
 
