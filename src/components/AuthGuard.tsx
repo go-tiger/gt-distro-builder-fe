@@ -4,23 +4,22 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { auth } from '@/lib/auth';
 
+const PUBLIC_PATHS = ['/login', '/register'];
+
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = () => {
-      if (!auth.isLoggedIn()) {
-        if (pathname !== '/login') {
-          router.push('/login');
-        }
-      } else {
-        setIsLoading(false);
-      }
-    };
+    const isPublicPath = PUBLIC_PATHS.includes(pathname);
+    const isLoggedIn = auth.isLoggedIn();
 
-    checkAuth();
+    if (!isLoggedIn && !isPublicPath) {
+      router.push('/login');
+    } else {
+      setIsLoading(false);
+    }
   }, [router, pathname]);
 
   if (isLoading) {
