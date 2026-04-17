@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { SelectedMod, SelectedResourcePack, SelectedShaderPack, SelectedExtraFile } from '@/types/wizard';
 import { api } from '@/lib/api';
 
@@ -150,25 +150,73 @@ function buildDistributionJson(
     ...(loaderSubModules.length > 0 ? { subModules: loaderSubModules } : {}),
   };
 
-  // 백엔드에서 MD5/size가 채워진 모듈을 받았으면 그것을 사용, 없으면 프론트에서 구성
-  const modModules: ModuleEntry[] = backendModules
-    ? backendModules.map(m => ({
-        ...m,
-        required: mods.find(mod => m.id.startsWith(mod.project_id))
-          ? modOptionToRequired(mods.find(mod => m.id.startsWith(mod.project_id))!.option)
-          : undefined,
-      }))
-    : mods.map(mod => ({
-        id: `${mod.project_id}:${mod.version_id}`,
-        name: mod.title,
-        type: modType,
-        artifact: {
-          size: mod.artifact_size,
-          MD5: null,
-          url: mod.artifact_url,
+  // 백엔드에서 받은 모듈이 있으면 그것을 사용 (loader + mods 포함)
+  if (backendModules) {
+    // 서브모듈 URL 변환 (localhost → maven.fabricmc.net)
+    const modulesWithFixedUrls = backendModules.map(module => {
+      if (module.subModules) {
+        return {
+          ...module,
+          subModules: module.subModules.map(subModule => {
+            if (subModule.artifact?.url?.includes('localhost')) {
+              const url = subModule.artifact.url;
+              let newUrl = url;
+              if (url.includes('/repo/lib/')) {
+                const libPath = url.split('/repo/lib/')[1];
+                newUrl = `https://maven.fabricmc.net/${libPath}`;
+              } else if (url.includes('/repo/versions/')) {
+                const versionPath = url.split('/repo/versions/')[1];
+                newUrl = `https://maven.fabricmc.net/${versionPath}`;
+              }
+              return {
+                ...subModule,
+                artifact: {
+                  ...subModule.artifact,
+                  url: newUrl,
+                },
+              };
+            }
+            return subModule;
+          }),
+        };
+      }
+      return module;
+    });
+
+    return {
+      version: '1.0.0',
+      rss: 'https://example.com/rss',
+      servers: [
+        {
+          id: `${mcVersion}-${loader}`,
+          name: `${mcVersion} ${loader.charAt(0).toUpperCase() + loader.slice(1)}`,
+          description: `Minecraft ${mcVersion} with ${loader}`,
+          icon: 'https://example.com/icon.png',
+          version: mcVersion,
+          address: 'example.com:25565',
+          minecraftVersion: mcVersion,
+          mainServer: true,
+          autoconnect: false,
+          modules: [
+            ...modulesWithFixedUrls,
+          ],
         },
-        required: modOptionToRequired(mod.option),
-      }));
+      ],
+    };
+  }
+
+  // 백엔드에서 모듈을 받지 못한 경우 프론트에서 구성
+  const modModules: ModuleEntry[] = mods.map(mod => ({
+    id: `${mod.project_id}:${mod.version_id}`,
+    name: mod.title,
+    type: modType,
+    artifact: {
+      size: mod.artifact_size,
+      MD5: null,
+      url: mod.artifact_url,
+    },
+    required: modOptionToRequired(mod.option),
+  }));
 
   const resourcePackModules: ModuleEntry[] = resourcePacks.map((pack, i) => {
     const id = pack.type === 'modrinth' && pack.project_id
@@ -241,22 +289,39 @@ function buildDistributionJson(
 async function fetchBackendModules(
   mcVersion: string,
   loader: string,
+  loaderVersion: string,
   mods: SelectedMod[],
 ): Promise<ModuleEntry[] | null> {
   try {
+    const modsMap = new Map(mods.map(m => [m.slug, m]));
+
     const data = await api.post('/api/distribution/generate', {
       serverId: `${mcVersion}-${loader}`,
       serverName: `${mcVersion} ${loader.charAt(0).toUpperCase() + loader.slice(1)}`,
       minecraftVersion: mcVersion,
       loader,
+      loaderVersion,
       mods: mods.map(m => ({
         slug: m.slug,
         name: m.title,
         version: m.version_number,
         required: m.option === 'required',
+        option: m.option,
       })),
     }) as DistributionJson;
-    return data.servers?.[0]?.modules ?? null;
+
+    const modules = data.servers?.[0]?.modules ?? null;
+    if (!modules) return null;
+
+    // 모드 URL을 Modrinth URL로 변환
+    for (const module of modules) {
+      const mod = Array.from(modsMap.values()).find(m => module.id.includes(m.slug));
+      if (mod && module.artifact?.url?.includes('localhost')) {
+        module.artifact.url = mod.artifact_url;
+      }
+    }
+
+    return modules;
   } catch {
     return null;
   }
@@ -278,6 +343,7 @@ export default function StepJsonPreview({
   const [backendModules, setBackendModules] = useState<ModuleEntry[] | null>(null);
   const [loadingBackend, setLoadingBackend] = useState(false);
   const [backendError, setBackendError] = useState<string | null>(null);
+  const pendingRequestRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (loader !== 'fabric') return;
@@ -290,9 +356,17 @@ export default function StepJsonPreview({
 
   useEffect(() => {
     if (mods.length === 0) return;
+
+    const requestKey = `${mcVersion}-${loader}-${loaderVersion}-${mods.length}`;
+
+    // 같은 요청이 이미 진행 중이면 무시
+    if (pendingRequestRef.current === requestKey) return;
+
+    pendingRequestRef.current = requestKey;
     setLoadingBackend(true);
     setBackendError(null);
-    fetchBackendModules(mcVersion, loader, mods)
+
+    fetchBackendModules(mcVersion, loader, loaderVersion, mods)
       .then(modules => {
         if (modules) {
           setBackendModules(modules);
@@ -300,8 +374,11 @@ export default function StepJsonPreview({
           setBackendError('백엔드 연결 실패 — MD5 없이 생성됩니다.');
         }
       })
-      .finally(() => setLoadingBackend(false));
-  }, [mcVersion, loader, mods]);
+      .finally(() => {
+        setLoadingBackend(false);
+        pendingRequestRef.current = null;
+      });
+  }, [mcVersion, loader, loaderVersion, mods.length]);
 
   const json = buildDistributionJson(
     mcVersion, loader, loaderVersion,
