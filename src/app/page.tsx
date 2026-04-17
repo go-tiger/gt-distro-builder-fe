@@ -1,5 +1,9 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import FeatureCard from '@/components/FeatureCard';
+import { api } from '@/lib/api';
 
 const features = [
   {
@@ -22,12 +26,35 @@ const features = [
 
 
 export default function Home() {
+  const [quota, setQuota] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchQuota = async () => {
+      try {
+        const data = await api.get('/api/auth/me');
+        setQuota(data);
+      } catch {
+        // 오류 무시
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuota();
+  }, []);
+
   return (
     <div className='min-h-screen dot-grid bg-[#080c14]'>
       {/* ── Nav ─────────────────────────────────────────────────────── */}
       <nav className='border-b border-[#1e2d45] sticky top-0 z-50 backdrop-blur-md bg-[#080c14]/80'>
         <div className='max-w-6xl mx-auto px-6 h-14 flex items-center justify-between'>
           <span className='font-mono text-sm font-bold text-[#00d4aa]'>distro-builder</span>
+          {!loading && quota && (
+            <div className='text-sm text-[#94a3b8]'>
+              남은 횟수: <span className='text-[#00d4aa] font-semibold'>{quota.remainingQuota}</span>
+            </div>
+          )}
         </div>
       </nav>
 
