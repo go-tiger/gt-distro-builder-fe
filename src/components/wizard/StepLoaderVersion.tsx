@@ -19,15 +19,10 @@ async function fetchFabricVersions(mcVersion: string): Promise<string[]> {
 }
 
 async function fetchForgeVersions(mcVersion: string): Promise<string[]> {
-  // promotions_slim: CORS 허용, latest/recommended 버전 제공
-  const res = await fetch('https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json');
+  // Backend proxy endpoint to avoid CORS issues
+  const res = await fetch(`/api/loaders/forge/${mcVersion}`);
   const data = await res.json();
-  const result: string[] = [];
-  const recommended = data.promos[`${mcVersion}-recommended`];
-  const latest = data.promos[`${mcVersion}-latest`];
-  if (recommended) result.push(`${mcVersion}-${recommended} (recommended)`);
-  if (latest && latest !== recommended) result.push(`${mcVersion}-${latest} (latest)`);
-  return result;
+  return data;
 }
 
 async function fetchNeoForgeVersions(mcVersion: string): Promise<string[]> {
