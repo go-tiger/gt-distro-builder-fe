@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { SelectedMod, SelectedResourcePack, SelectedShaderPack, SelectedExtraFile } from '@/types/wizard';
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3001';
+import { api } from '@/lib/api';
 
 interface Props {
   mcVersion: string;
@@ -245,24 +244,18 @@ async function fetchBackendModules(
   mods: SelectedMod[],
 ): Promise<ModuleEntry[] | null> {
   try {
-    const res = await fetch(`${BACKEND_URL}/api/distribution/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        serverId: `${mcVersion}-${loader}`,
-        serverName: `${mcVersion} ${loader.charAt(0).toUpperCase() + loader.slice(1)}`,
-        minecraftVersion: mcVersion,
-        loader,
-        mods: mods.map(m => ({
-          slug: m.slug,
-          name: m.title,
-          version: m.version_number,
-          required: m.option === 'required',
-        })),
-      }),
-    });
-    if (!res.ok) return null;
-    const data: DistributionJson = await res.json();
+    const data = await api.post('/api/distribution/generate', {
+      serverId: `${mcVersion}-${loader}`,
+      serverName: `${mcVersion} ${loader.charAt(0).toUpperCase() + loader.slice(1)}`,
+      minecraftVersion: mcVersion,
+      loader,
+      mods: mods.map(m => ({
+        slug: m.slug,
+        name: m.title,
+        version: m.version_number,
+        required: m.option === 'required',
+      })),
+    }) as DistributionJson;
     return data.servers?.[0]?.modules ?? null;
   } catch {
     return null;

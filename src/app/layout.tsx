@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { AuthGuard } from '@/components/AuthGuard';
 
 export const metadata: Metadata = {
   title: 'Distro Builder',
@@ -13,7 +14,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='ko' className='h-full' data-scroll-behavior="smooth">
-      <body className='min-h-full flex flex-col bg-[#080c14] text-[#e2e8f0]'>{children}</body>
+      <body className='min-h-full flex flex-col bg-[#080c14] text-[#e2e8f0]'>
+        <AuthGuard>{children}</AuthGuard>
+      </body>
     </html>
   );
 }
