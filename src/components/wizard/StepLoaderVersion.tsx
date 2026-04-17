@@ -27,19 +27,9 @@ async function fetchForgeVersions(mcVersion: string): Promise<string[]> {
 }
 
 async function fetchNeoForgeVersions(mcVersion: string): Promise<string[]> {
-  const res = await fetch('https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml');
-  const text = await res.text();
-  const matches = text.match(/<version>(.*?)<\/version>/g) ?? [];
-  const versions = matches.map(m => m.replace(/<\/?version>/g, '')).filter(v => !v.includes('beta'));
-
-  // MC 버전 → NeoForge 접두어 매핑
-  // 1.20.2 → "20.2.", 1.21.1 → "21.1."
-  // 26.1 (새 넘버링) → "26.1."
-  const parts = mcVersion.split('.');
-  const prefix = parts[0] === '1'
-    ? parts.slice(1).join('.') + '.'  // 1.x 넘버링
-    : parts.slice(0, 2).join('.') + '.'; // 26.x 새 넘버링
-  return versions.filter(v => v.startsWith(prefix)).reverse();
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+  const res = await fetch(`${backendUrl}/api/loaders/neoforge/${mcVersion}`);
+  return res.json();
 }
 
 export default function StepLoaderVersion({ loader, mcVersion, selected, onSelect, onNext, onBack }: Props) {

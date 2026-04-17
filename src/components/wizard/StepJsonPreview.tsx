@@ -150,38 +150,9 @@ function buildDistributionJson(
     ...(loaderSubModules.length > 0 ? { subModules: loaderSubModules } : {}),
   };
 
-  // 백엔드에서 받은 모듈이 있으면 그것을 사용 (loader + mods 포함)
+  // 백엔드에서 받은 모듈이 있으면 그것을 사용 (loader + mods 포함, URL 변환은 백엔드에서 완료)
   if (backendModules) {
-    // 서브모듈 URL 변환 (localhost → maven.fabricmc.net)
-    const modulesWithFixedUrls = backendModules.map(module => {
-      if (module.subModules) {
-        return {
-          ...module,
-          subModules: module.subModules.map(subModule => {
-            if (subModule.artifact?.url?.includes('localhost')) {
-              const url = subModule.artifact.url;
-              let newUrl = url;
-              if (url.includes('/repo/lib/')) {
-                const libPath = url.split('/repo/lib/')[1];
-                newUrl = `https://maven.fabricmc.net/${libPath}`;
-              } else if (url.includes('/repo/versions/')) {
-                const versionPath = url.split('/repo/versions/')[1];
-                newUrl = `https://maven.fabricmc.net/${versionPath}`;
-              }
-              return {
-                ...subModule,
-                artifact: {
-                  ...subModule.artifact,
-                  url: newUrl,
-                },
-              };
-            }
-            return subModule;
-          }),
-        };
-      }
-      return module;
-    });
+    const modulesWithFixedUrls = backendModules;
 
     return {
       version: '1.0.0',
