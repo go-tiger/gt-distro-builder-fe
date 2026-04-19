@@ -29,7 +29,7 @@ export interface SelectedShaderPack {
   version_number?: string;
   artifact_url?: string;
   artifact_size?: number;
-  url?: string;          // manual only
+  url?: string; // manual only
   tracked: boolean;
 }
 
@@ -43,6 +43,6 @@ export interface SelectedResourcePack {
   version_number?: string;
   artifact_url?: string;
   artifact_size?: number;
-  url?: string;          // manual only
+  url?: string; // manual only
   tracked: boolean;
 }

@@ -22,7 +22,17 @@ type WizardState = {
   extraFiles: SelectedExtraFile[];
 };
 
-const STEPS = ['MC 버전', '로더', '로더 버전', '모드 검색', '모드 옵션', '리소스팩', '쉐이더팩', '기타 파일', 'JSON 생성'];
+const STEPS = [
+  'MC 버전',
+  '로더',
+  '로더 버전',
+  '모드 검색',
+  '모드 옵션',
+  '리소스팩',
+  '쉐이더팩',
+  '기타 파일',
+  'JSON 생성',
+];
 
 export default function SearchPage() {
   const [step, setStep] = useState(0);
@@ -70,7 +80,9 @@ export default function SearchPage() {
                 >
                   {i < step ? '✓' : i + 1}
                 </span>
-                <span className={`text-sm font-medium hidden sm:block ${i === step ? 'text-[#e2e8f0]' : 'text-[#475569]'}`}>
+                <span
+                  className={`text-sm font-medium hidden sm:block ${i === step ? 'text-[#e2e8f0]' : 'text-[#475569]'}`}
+                >
                   {label}
                 </span>
               </div>

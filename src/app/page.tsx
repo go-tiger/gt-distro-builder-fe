@@ -26,7 +26,6 @@ const features = [
   },
 ];
 
-
 export default function Home() {
   const router = useRouter();
   const [quota, setQuota] = useState<any>(null);
@@ -86,18 +85,12 @@ export default function Home() {
                 >
                   대시보드
                 </button>
-                <button
-                  onClick={handleLogout}
-                  className='text-sm text-[#94a3b8] hover:text-red-400 transition'
-                >
+                <button onClick={handleLogout} className='text-sm text-[#94a3b8] hover:text-red-400 transition'>
                   로그아웃
                 </button>
               </div>
             ) : (
-              <Link
-                href='/login'
-                className='text-sm text-[#94a3b8] hover:text-[#00d4aa] transition'
-              >
+              <Link href='/login' className='text-sm text-[#94a3b8] hover:text-[#00d4aa] transition'>
                 로그인
               </Link>
             )}
@@ -202,8 +195,6 @@ export default function Home() {
             ))}
           </div>
         </section>
-
-
       </main>
 
       {/* ── Footer ──────────────────────────────────────────────────────── */}
