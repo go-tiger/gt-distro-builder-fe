@@ -148,10 +148,8 @@ function buildDistributionJson(
     ...(loaderSubModules.length > 0 ? { subModules: loaderSubModules } : {}),
   };
 
-  // 백엔드에서 받은 모듈이 있으면 그것을 사용 (loader + mods 포함, URL 변환은 백엔드에서 완료)
+  // 백엔드에서 받은 모듈이 있으면 그것을 사용 (loader + mods + File 타입 포함)
   if (backendModules) {
-    const modulesWithFixedUrls = backendModules;
-
     return {
       version: '1.0.0',
       rss: 'https://example.com/rss',
@@ -166,7 +164,7 @@ function buildDistributionJson(
           minecraftVersion: mcVersion,
           mainServer: true,
           autoconnect: false,
-          modules: [...modulesWithFixedUrls],
+          modules: backendModules,
         },
       ],
     };
@@ -250,9 +248,13 @@ async function fetchBackendModules(
   loader: string,
   loaderVersion: string,
   mods: SelectedMod[],
+  resourcePacks: SelectedResourcePack[],
+  shaderPacks: SelectedShaderPack[],
+  extraFiles?: SelectedExtraFile[],
 ): Promise<ModuleEntry[] | null> {
   try {
     const modsMap = new Map(mods.map(m => [m.slug, m]));
+    const allPacks = [...resourcePacks, ...shaderPacks];
 
     const data = (await api.post('/api/distribution/generate', {
       serverId: `${mcVersion}-${loader}`,
@@ -267,6 +269,33 @@ async function fetchBackendModules(
         required: m.option === 'required',
         option: m.option,
       })),
+      resourcePacks: resourcePacks.map(p => {
+        const fileUrl = p.artifact_url || p.url || '';
+        const fileName = decodeURIComponent(fileUrl.split('/').pop() || '');
+        return {
+          url: fileUrl,
+          tracked: p.tracked,
+          fileName,
+          size: p.artifact_size || 0,
+          md5: null,
+        };
+      }),
+      shaderPacks: shaderPacks.map(p => {
+        const fileUrl = p.artifact_url || p.url || '';
+        const fileName = decodeURIComponent(fileUrl.split('/').pop() || '');
+        return {
+          url: fileUrl,
+          tracked: p.tracked,
+          fileName,
+          size: p.artifact_size || 0,
+          md5: null,
+        };
+      }),
+      extraFiles: (extraFiles || []).map(f => ({
+        url: f.url,
+        tracked: f.tracked,
+        path: f.path,
+      })),
     })) as DistributionJson;
 
     const modules = data.servers?.[0]?.modules ?? null;
@@ -277,6 +306,18 @@ async function fetchBackendModules(
       const mod = Array.from(modsMap.values()).find(m => module.id.includes(m.slug));
       if (mod && module.artifact?.url?.includes('localhost')) {
         module.artifact.url = mod.artifact_url;
+      }
+
+      // File 타입 URL 복원
+      if (module.type === 'File' && module.artifact?.url?.includes('localhost')) {
+        const fileName = decodeURIComponent(module.artifact.url.split('/').pop() || '');
+        const packData = allPacks.find(p => {
+          const packFileName = decodeURIComponent((p.artifact_url || p.url || '').split('/').pop() || '');
+          return packFileName === fileName;
+        });
+        if (packData) {
+          module.artifact.url = packData.artifact_url || packData.url || '';
+        }
       }
     }
 
@@ -316,7 +357,7 @@ export default function StepJsonPreview({
   useEffect(() => {
     if (mods.length === 0) return;
 
-    const requestKey = `${mcVersion}-${loader}-${loaderVersion}-${mods.length}`;
+    const requestKey = JSON.stringify({ mcVersion, loader, loaderVersion, modsCount: mods.length, resourcePacksUrls: resourcePacks.map(p => p.url), shaderPacksUrls: shaderPacks.map(p => p.url), extraFilesUrls: extraFiles.map(f => f.url) });
 
     // 같은 요청이 이미 진행 중이면 무시
     if (pendingRequestRef.current === requestKey) return;
@@ -325,7 +366,7 @@ export default function StepJsonPreview({
     setLoadingBackend(true);
     setBackendError(null);
 
-    fetchBackendModules(mcVersion, loader, loaderVersion, mods)
+    fetchBackendModules(mcVersion, loader, loaderVersion, mods, resourcePacks, shaderPacks, extraFiles)
       .then(modules => {
         if (modules) {
           setBackendModules(modules);
@@ -337,7 +378,7 @@ export default function StepJsonPreview({
         setLoadingBackend(false);
         pendingRequestRef.current = null;
       });
-  }, [mcVersion, loader, loaderVersion, mods.length]);
+  }, [mcVersion, loader, loaderVersion, mods, resourcePacks, shaderPacks, extraFiles]);
 
   const json = buildDistributionJson(
     mcVersion,

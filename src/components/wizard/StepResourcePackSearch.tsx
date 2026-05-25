@@ -212,8 +212,16 @@ export default function StepResourcePackSearch({ mcVersion, onBack, onNext }: Pr
 
   function addManual() {
     const url = manualUrl.trim();
+    console.log('addManual called with url:', url);
     if (!url) return;
-    setSelectedPacks(prev => [...prev, { type: 'manual', url, tracked: manualTracked }]);
+    console.log('adding manual pack:', { type: 'manual', url, tracked: manualTracked });
+    setSelectedPacks(prev => [...prev, {
+      type: 'manual',
+      url,
+      tracked: manualTracked,
+      artifact_url: url,
+      artifact_size: 0,
+    } as SelectedResourcePack]);
     setManualUrl('');
     setManualTracked(true);
   }
@@ -502,7 +510,21 @@ export default function StepResourcePackSearch({ mcVersion, onBack, onNext }: Pr
           ← 이전
         </button>
         <button
-          onClick={() => onNext(selectedPacks)}
+          onClick={() => {
+            let finalPacks = [...selectedPacks];
+            // 수동 탭에서 입력 중인 URL이 있으면 추가
+            if (tab === 'manual' && manualUrl.trim()) {
+              finalPacks = [...finalPacks, {
+                type: 'manual',
+                url: manualUrl.trim(),
+                tracked: manualTracked,
+                artifact_url: manualUrl.trim(),
+                artifact_size: 0,
+              } as SelectedResourcePack];
+            }
+            console.log('리소스팩 finalPacks:', finalPacks);
+            onNext(finalPacks);
+          }}
           className='font-mono text-sm font-semibold bg-[#00d4aa]/10 border border-[#00d4aa]/40 text-[#00d4aa] px-6 py-2.5 rounded-lg hover:bg-[#00d4aa]/20 transition-colors'
         >
           {selectedPacks.length > 0 ? `다음 → (${selectedPacks.length})` : '건너뛰기 →'}
